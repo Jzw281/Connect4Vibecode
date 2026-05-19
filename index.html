@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Connect 4 — Play Classic, Mega, Blitz &amp; More</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=Syne:wght@700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="bg-grid" aria-hidden="true"></div>
+  <div class="bg-glow" aria-hidden="true"></div>
+
+  <main class="app">
+    <!-- Home: pick version -->
+    <section id="screen-home" class="screen active">
+      <header class="hero">
+        <div class="hero-badge">Drop · Connect · Win</div>
+        <h1>Connect <span class="accent-num">4</span></h1>
+        <p class="tagline">Five ways to play. One beautiful board.</p>
+      </header>
+
+      <div class="section-label">Choose a version</div>
+      <div class="variant-grid" id="variant-grid"></div>
+    </section>
+
+    <!-- Mode selection -->
+    <section id="screen-mode" class="screen">
+      <button type="button" class="btn-ghost" data-nav="home">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+        Back
+      </button>
+
+      <div class="selected-variant" id="selected-variant-preview"></div>
+
+      <h2 class="screen-title">How do you want to play?</h2>
+
+      <div class="mode-cards">
+        <button type="button" class="mode-card" data-mode="ai">
+          <span class="mode-card-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><rect x="4" y="6" width="16" height="12" rx="2"/><circle cx="9" cy="12" r="1.5" fill="currentColor"/><circle cx="15" cy="12" r="1.5" fill="currentColor"/><path d="M12 6V4"/></svg>
+          </span>
+          <span class="mode-card-body">
+            <span class="mode-card-title">vs Computer</span>
+            <span class="mode-card-desc">Smart AI with adjustable difficulty</span>
+          </span>
+          <span class="mode-card-arrow">→</span>
+        </button>
+        <button type="button" class="mode-card" data-mode="friend">
+          <span class="mode-card-icon friend">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><circle cx="9" cy="8" r="3"/><circle cx="17" cy="9" r="2.5"/><path d="M3 20c0-3 3-5 6-5s6 2 6 5"/><path d="M17 14c2.5 0 4 1.5 4 4"/></svg>
+          </span>
+          <span class="mode-card-body">
+            <span class="mode-card-title">Local Multiplayer</span>
+            <span class="mode-card-desc">Pass the device — two players</span>
+          </span>
+          <span class="mode-card-arrow">→</span>
+        </button>
+      </div>
+    </section>
+
+    <!-- AI setup -->
+    <section id="screen-ai-setup" class="screen">
+      <button type="button" class="btn-ghost" data-nav="mode">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+        Back
+      </button>
+
+      <h2 class="screen-title">vs Computer</h2>
+      <p class="screen-sub" id="ai-setup-variant-name">Classic</p>
+
+      <div class="panel">
+        <p class="field-label">Your color</p>
+        <div class="segmented color-segmented">
+          <button type="button" class="segment selected" data-color="red">
+            <span class="disc disc-red sm"></span>
+            Red <span class="hint">(first)</span>
+          </button>
+          <button type="button" class="segment" data-color="yellow">
+            <span class="disc disc-yellow sm"></span>
+            Yellow
+          </button>
+        </div>
+      </div>
+
+      <div class="panel">
+        <p class="field-label">Difficulty</p>
+        <div class="segmented diff-segmented">
+          <button type="button" class="segment" data-diff="easy">Easy</button>
+          <button type="button" class="segment selected" data-diff="medium">Medium</button>
+          <button type="button" class="segment" data-diff="hard">Hard</button>
+        </div>
+      </div>
+
+      <button type="button" class="btn-primary btn-lg" id="btn-start-ai">Start Game</button>
+    </section>
+
+    <!-- Game -->
+    <section id="screen-game" class="screen">
+      <header class="game-top">
+        <button type="button" class="btn-icon" id="btn-quit" title="Quit">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg>
+        </button>
+        <div class="game-meta">
+          <span class="variant-pill" id="game-variant-pill">Classic</span>
+          <span class="connect-rule" id="game-connect-rule">Connect 4</span>
+        </div>
+        <button type="button" class="btn-icon" id="btn-restart" title="Restart">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
+        </button>
+      </header>
+
+      <div class="turn-banner" id="turn-banner">
+        <span class="turn-disc disc disc-red" id="turn-disc-indicator"></span>
+        <span id="status-text">Red's turn</span>
+      </div>
+
+      <div class="board-scene">
+        <div class="column-labels" id="column-labels" aria-hidden="true"></div>
+        <div class="board-frame">
+          <div class="board-wrap" id="board-wrap">
+            <div class="board" id="board" role="grid"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="players-dock" id="player-bar">
+        <div class="player-card active" data-player="1">
+          <span class="disc disc-red"></span>
+          <div class="player-info">
+            <span class="player-label">Player 1</span>
+            <span class="player-name" id="name-p1">Red</span>
+          </div>
+          <span class="turn-dot"></span>
+        </div>
+        <div class="player-card" data-player="2">
+          <span class="disc disc-yellow"></span>
+          <div class="player-info">
+            <span class="player-label">Player 2</span>
+            <span class="player-name" id="name-p2">Yellow</span>
+          </div>
+          <span class="turn-dot"></span>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <dialog id="result-dialog" class="result-dialog">
+    <div class="result-panel">
+      <div class="result-glow" id="result-glow"></div>
+      <div class="result-discs" id="result-discs"></div>
+      <h2 id="result-title">You win!</h2>
+      <p id="result-subtitle"></p>
+      <div class="result-actions">
+        <button type="button" class="btn-primary" id="btn-play-again">Play Again</button>
+        <button type="button" class="btn-ghost centered" id="btn-home">Main Menu</button>
+      </div>
+    </div>
+  </dialog>
+
+  <script src="config.js"></script>
+  <script src="ai.js"></script>
+  <script src="game.js"></script>
+</body>
+</html>
